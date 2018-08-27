@@ -34,7 +34,7 @@ import './index.css';
                 // This will change the style of the button if
                 // there is a winner and winner is equal to the value
                 // of the square
-                style = {props.winner === props.value?{backgroundColor:'#2F4F4F', color:'white'}:{}}
+                style = {(props.winnerObj && props.winnerObj.positions.includes(props.index) && props.winnerObj.winner === props.value)?{backgroundColor:'#2F4F4F', color:'white'}:{}}
         >
           {props.value}
         </button>
@@ -45,13 +45,13 @@ import './index.css';
   // and it is maintained by the parent component.
   class Board extends React.Component {
     renderSquare(i) {
-      return (<Square value={this.props.squares[i]} key={i}
+      return (<Square value={this.props.squares[i]} key={i} index={i}
                       // the onClick here is the property of Square,
                       // although it has same name as onClick inbuilt property,
                       // it is not the same. We may as well have different name
                       // for it.
                       onClick={()=>{this.props.onClick(i)}}
-                      winner = {this.props.winner} 
+                      winnerObj = {this.props.winnerObj} 
                 />
               );
     }
@@ -99,7 +99,11 @@ import './index.css';
     render() {
       const history = this.state.history;
       const current = history[this.state.stepNumber]; // JSON object of current values in all 9 locations
-      const winner = calculateWinner(current.squares);
+      const winnerObj = calculateWinner(current.squares);
+      let winner;
+      if(winnerObj){
+        winner = winnerObj.winner;
+    }
 
       let moves = history.map((step, move)=>{
         const desc = move ? "Go to move #"+ move :
@@ -135,7 +139,7 @@ import './index.css';
       return (
         <div className="game">
           <div className="game-board">
-            <Board squares={current.squares} winner = {winner}
+            <Board squares={current.squares} winnerObj = {winnerObj}
                     // Because single click handler is used for all 9 buttons
                     // we have to pass the index value of each clicked button
                     onClick={(i)=>{this.handleClick(i)}}
@@ -173,8 +177,11 @@ import './index.css';
       var currentCol = current.currentCol;
       var currentRow = current.currentRow;
       
-      
-      const winner = calculateWinner(squares);
+      const winnerObj = calculateWinner(squares);
+      let winner;
+      if(winnerObj){
+        winner = winnerObj.winner;
+      }
 
       if(squares[i]){
         return;
@@ -236,7 +243,7 @@ import './index.css';
     for(let i=0;i<lines.length;i++){
       const [a, b, c] = lines[i];
       if(squares[a] && squares[a] === squares[b] && squares[a] === squares[c]){
-        return squares[a];
+        return {winner: squares[a],positions:[a, b, c]};
       }
     }
   }
